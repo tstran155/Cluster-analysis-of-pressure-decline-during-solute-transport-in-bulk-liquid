@@ -1,62 +1,62 @@
-from scipy import optimize
-import matplotlib.pyplot as plt
-from scipy.stats import linregress
-import numpy as np
-import pandas as pd
-from sklearn.metrics import r2_score
-import numpy.polynomial.polynomial as npoly
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-import matplotlib.font_manager as fm
+fromÂ scipyÂ importÂ optimize
+importÂ matplotlib.pyplotÂ asÂ plt
+fromÂ scipy.statsÂ importÂ linregress
+importÂ numpyÂ asÂ np
+importÂ pandasÂ asÂ pd
+fromÂ sklearn.metricsÂ importÂ r2_score
+importÂ numpy.polynomial.polynomialÂ asÂ npoly
+importÂ matplotlibÂ asÂ mpl
+importÂ matplotlib.pyplotÂ asÂ plt
+importÂ matplotlib.font_managerÂ asÂ fm
 path=('/content/Times_New_Roman.ttf')
-fontprop = fm.FontProperties(fname=path)
+fontpropÂ =Â fm.FontProperties(fname=path)
 
-%matplotlib inline
-data = pd.read_csv('/content/EXP1_C1SK_noP_bar.csv').values
-x = data[0:200,0]
-y= data[0:200,1]
-plt.scatter(x, y, marker='o', c='white', edgecolors='blue', s=18)
-%config InlineBackend.figure_format = 'svg'
+%matplotlibÂ inline
+dataÂ =Â pd.read_csv('/content/Set1_C1C2_bar.csv').values
+xÂ =Â data[0:200,0]
+y=Â data[0:200,1]
+plt.scatter(x,Â y,Â marker='o',Â c='white',Â edgecolors='blue',Â s=18)
+%configÂ InlineBackend.figure_formatÂ =Â 'svg'
 
-def f(breakpoints, x, y, fcache):
-    breakpoints = tuple(map(int, sorted(breakpoints)))
-    if breakpoints not in fcache:
-        total_error = 0
-        for f, xi, yi in find_best_piecewise_polynomial(breakpoints, x, y):
-            total_error += ((f(xi) - yi)**2).sum()
-        fcache[breakpoints] = total_error
-    # print('{} --> {}'.format(breakpoints, fcache[breakpoints]))
-    return fcache[breakpoints]
+defÂ f(breakpoints,Â x,Â y,Â fcache):
+Â Â Â Â breakpointsÂ =Â tuple(map(int,Â sorted(breakpoints)))
+Â Â Â Â ifÂ breakpointsÂ notÂ inÂ fcache:
+Â Â Â Â Â Â Â Â total_errorÂ =Â 0
+Â Â Â Â Â Â Â Â forÂ f,Â xi,Â yiÂ inÂ find_best_piecewise_polynomial(breakpoints,Â x,Â y):
+Â Â Â Â Â Â Â Â Â Â Â Â total_errorÂ +=Â ((f(xi)Â -Â yi)**2).sum()
+Â Â Â Â Â Â Â Â fcache[breakpoints]Â =Â total_error
+Â Â Â Â #Â print('{}Â -->Â {}'.format(breakpoints,Â fcache[breakpoints]))
+Â Â Â Â returnÂ fcache[breakpoints]
 
-def find_best_piecewise_polynomial(breakpoints, x, y):
-    breakpoints = tuple(map(int, sorted(breakpoints)))
-    xs = np.split(x, breakpoints)
-    ys = np.split(y, breakpoints)
-    result = []
-    for xi, yi in zip(xs, ys):
-        if len(xi) < 2: continue
-        coefs = npoly.polyfit(xi, yi, 1)
-        f = npoly.Polynomial(coefs)
-        result.append([f, xi, yi])
-    return result
+defÂ find_best_piecewise_polynomial(breakpoints,Â x,Â y):
+Â Â Â Â breakpointsÂ =Â tuple(map(int,Â sorted(breakpoints)))
+Â Â Â Â xsÂ =Â np.split(x,Â breakpoints)
+Â Â Â Â ysÂ =Â np.split(y,Â breakpoints)
+Â Â Â Â resultÂ =Â []
+Â Â Â Â forÂ xi,Â yiÂ inÂ zip(xs,Â ys):
+Â Â Â Â Â Â Â Â ifÂ len(xi)Â <Â 2:Â continue
+Â Â Â Â Â Â Â Â coefsÂ =Â npoly.polyfit(xi,Â yi,Â 1)
+Â Â Â Â Â Â Â Â fÂ =Â npoly.Polynomial(coefs)
+Â Â Â Â Â Â Â Â result.append([f,Â xi,Â yi])
+Â Â Â Â returnÂ result
 
-num_breakpoints = 2
-breakpoints = optimize.brute(f, [slice(1, len(x), 1)]*num_breakpoints, args=(x, y, {}), finish=None)
+num_breakpointsÂ =Â 2
+breakpointsÂ =Â optimize.brute(f,Â [slice(1,Â len(x),Â 1)]*num_breakpoints,Â args=(x,Â y,Â {}),Â finish=None)
 
-plt.scatter(x, y, marker='o', c='white', edgecolors='blue', s=18)
-for f, xi, yi, in find_best_piecewise_polynomial(breakpoints, x, y):
-    x_interval = np.array([xi.min(), xi.max()])
-    linreg = linregress(y[0:xi.size], f(xi))
-    print('y = {:35s}, if x in [{}, {}]'.format(str(f), *x_interval))
-    plt.plot(x_interval, f(x_interval), 'r-', linewidth=2)
-    #plt.xlim(0, 175)
-    plt.ylim(133, 139)
-    plt.xlabel('Time (hours)', fontproperties=fontprop, fontsize =18)
-    plt.ylabel('Pressure (bar)', fontproperties=fontprop, fontsize=18)
-    #plt.xticks(np.arange(0, 175, step=25), fontsize=16)
-    plt.xticks(fontproperties=fontprop, fontsize=18)
-    plt.yticks(fontproperties=fontprop, fontsize=18)
-    #plt.text((xi.min()+xi.max())/2+1,(yi.min()+yi.max())/2+0.15, '$R^{2}$=%0.2f,' % linreg.rvalue, fontproperties=fontprop, fontsize =16)
-    plt.text((xi.min()+xi.max())/2+1,(yi.min()+yi.max())/2+0.2, 'S=%0.2f' % linreg.slope,  fontproperties=fontprop, fontsize =16)
+plt.scatter(x,Â y,Â marker='o',Â c='white',Â edgecolors='blue',Â s=18)
+forÂ f,Â xi,Â yi,Â inÂ find_best_piecewise_polynomial(breakpoints,Â x,Â y):
+Â Â Â Â x_intervalÂ =Â np.array([xi.min(),Â xi.max()])
+Â Â Â Â linregÂ =Â linregress(y[0:xi.size],Â f(xi))
+Â Â Â Â print('yÂ =Â {:35s},Â ifÂ xÂ inÂ [{},Â {}]'.format(str(f),Â *x_interval))
+Â Â Â Â plt.plot(x_interval,Â f(x_interval),Â 'r-',Â linewidth=2)
+Â Â Â Â #plt.xlim(0,Â 175)
+Â Â Â Â plt.ylim(133,Â 139)
+Â Â Â Â plt.xlabel('TimeÂ (hours)',Â fontproperties=fontprop,Â fontsizeÂ =18)
+Â Â Â Â plt.ylabel('PressureÂ (bar)',Â fontproperties=fontprop,Â fontsize=18)
+Â Â Â Â #plt.xticks(np.arange(0,Â 175,Â step=25),Â fontsize=16)
+Â Â Â Â plt.xticks(fontproperties=fontprop,Â fontsize=18)
+Â Â Â Â plt.yticks(fontproperties=fontprop,Â fontsize=18)
+Â Â Â Â #plt.text((xi.min()+xi.max())/2+1,(yi.min()+yi.max())/2+0.15,Â '$R^{2}$=%0.2f,'Â %Â linreg.rvalue,Â fontproperties=fontprop,Â fontsizeÂ =16)
+Â Â Â Â plt.text((xi.min()+xi.max())/2+1,(yi.min()+yi.max())/2+0.2,Â 'S=%0.2f'Â %Â linreg.slope,Â Â fontproperties=fontprop,Â fontsizeÂ =16)
 
 
